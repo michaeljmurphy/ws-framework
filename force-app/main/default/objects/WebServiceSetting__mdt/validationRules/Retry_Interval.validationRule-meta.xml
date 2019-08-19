@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Retry_Interval</fullName>
+    <active>true</active>
+    <description>Must have retry interval if you have retry</description>
+    <errorConditionFormula>Retry__c == null &amp;&amp; Retry_Interval_Mins__c == null</errorConditionFormula>
+    <errorMessage>Must define retry interval if you have a retry</errorMessage>
+</ValidationRule>
