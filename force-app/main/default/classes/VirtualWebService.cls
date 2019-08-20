@@ -30,6 +30,30 @@ public virtual class VirtualWebService {
         throw new VirtualWebServiceException();
     }
 
+    protected void unscheduleExistingJobs() {
+        List<CronTrigger> ct = [SELECT id
+                                FROM crontrigger
+                                WHERE cronjobdetail.name
+                                LIKE :(thisClassName + '%')];
+
+        for (CronTrigger i : ct)
+            { System.abortJob(i.id); }
+    }
+
+    protected void scheduleNextRetry(Type t) {
+        DateTime schedTime = DateTime.now().addMinutes((Integer)wsSetting.Retry_Interval_Mins__c);
+        String cron = schedTime.second()
+            + ' ' + schedTime.minute()
+            + ' ' + schedTime.hour()
+            + ' ' + schedTime.day()
+            + ' ' + schedTime.month()
+            + ' ? ' + schedTime.year();
+        
+        System.schedule(thisClassName + ' - ' + String.valueOf(DateTime.now())
+                        , cron
+                        , new WebServiceScheduler((System.Queueable)t.newInstance()));
+    }
+
 
     protected virtual void retry() {
         if(!wsSetting.retry__c)
@@ -38,15 +62,15 @@ public virtual class VirtualWebService {
         Type t;
 
         try {
-            t = Type.forName(String.valueOf(this).split(':')[0]);
+            t = Type.forName(thisClassName);
         } catch (Exception e) {
             System.debug(e.getMessage());
             error();
         }
-        
-        System.schedule(thisClassName + String.valueOf(DateTime.now())
-                        , '0 ' + String.valueOf(wsSetting.Retry_Interval_Mins__c) + ' * * * ?'
-                        , new WebServiceScheduler((System.Queueable)t.newInstance()));
+
+        unscheduleExistingJobs();
+
+        scheduleNextRetry(t);
     }
 
     protected virtual HttpResponse callout() {
@@ -60,6 +84,8 @@ public virtual class VirtualWebService {
 
         if(!String.valueOf(res.getStatusCode()).startsWith('2'))
             { retry(); }
+
+        unscheduleExistingJobs();
 
         return res;
     }
