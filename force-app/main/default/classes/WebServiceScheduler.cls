@@ -14,6 +14,12 @@ public with sharing class WebServiceScheduler
     }
 
     public void execute(SchedulableContext ctx) {
-        System.enqueueJob(wsImp);
+        if(wsImp instanceOf IWebService) {
+            System.enqueueJob(wsImp);            
+        } else {
+            throw new WebServiceSchedulerException('WebServiceScheduler should not schedule classes which do not implement IWebService');
+        }
     }
+
+    public class WebServiceSchedulerException extends Exception {}
 }

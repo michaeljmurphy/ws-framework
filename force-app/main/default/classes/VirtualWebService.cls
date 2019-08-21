@@ -82,8 +82,10 @@ public virtual class VirtualWebService {
         req.setMethod(this.wsSetting.verb__c);
         res = h.send(req);
 
-        if(!String.valueOf(res.getStatusCode()).startsWith('2'))
-            { retry(); }
+        if(!String.valueOf(res.getStatusCode()).startsWith('2')) {
+            retry();
+            return null;
+        }
 
         unscheduleExistingJobs();
 
