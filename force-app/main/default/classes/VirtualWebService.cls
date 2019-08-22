@@ -5,6 +5,10 @@
  * */
 
 public virtual class VirtualWebService {
+    private static String GET = 'GET';
+
+    protected Map<String, String> urlParameters;
+
     protected WebServiceSetting__mdt wsSetting;
     protected String thisClassName;
 
@@ -12,6 +16,7 @@ public virtual class VirtualWebService {
     public VirtualWebService() {
         this.thisClassName = String.valueOf(this).split(':')[0];
         this.wsSetting = getWsSettings(this.thisClassName);
+        this.urlParameters = new Map<String, String> ();
     }
 
     protected WebServiceSetting__mdt getWsSettings(String wsName) {
@@ -27,7 +32,7 @@ public virtual class VirtualWebService {
     }
 
     protected virtual void error() {
-        throw new VirtualWebServiceException();
+        throw new VirtualWebServiceException(Label.VirtualWebServiceUndefinedException);
     }
 
     protected void unscheduleExistingJobs() {
@@ -73,24 +78,47 @@ public virtual class VirtualWebService {
         scheduleNextRetry(t);
     }
 
+
+    protected Boolean checkResponseAndRetry(HttpResponse res) {
+        return String.valueOf(res.getStatusCode()).startsWith('2');
+    }
+
     protected virtual HttpResponse callout() {
         Http h = new Http();
         HttpRequest req = new HttpRequest();
         HttpResponse res = new HttpResponse(); 
+        String uri = this.wsSetting.uri__c;
 
-        req.setEndpoint(this.wsSetting.uri__c);
+        if(!urlParameters.keySet().isEmpty()) {
+            uri += '?';
+
+            for(String i : urlParameters.keySet())
+                { uri += i + '=' + urlParameters.get(i) + '&'; }
+
+            uri = uri.removeEnd('&');
+            uri = EncodingUtil.urlEncode(uri, 'UTF-8');
+        }
+
+        req.setEndpoint(uri);
         req.setMethod(this.wsSetting.verb__c);
+        
         res = h.send(req);
 
-        if(!String.valueOf(res.getStatusCode()).startsWith('2')) {
+        if(checkResponseAndRetry(res)) {
+            unscheduleExistingJobs();
+            return res;
+        } else {
             retry();
             return null;
         }
-
-        unscheduleExistingJobs();
-
-        return res;
+        
     }
+
+    protected VirtualWebService addUrlParameter(String key, String value) {
+        urlParameters.put(key, value);
+        return this;
+    }
+
 
     public class VirtualWebServiceException extends Exception {}
 }

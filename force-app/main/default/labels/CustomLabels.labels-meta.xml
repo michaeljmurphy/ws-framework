@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>VirtualWebServiceUndefinedException</fullName>
+        <categories>Exception</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>VirtualWebServiceUndefinedException</shortDescription>
+        <value>There has been an undefined exception with Virtual Web Service.  Please contact your administrator.</value>
+    </labels>
+    <labels>
+        <fullName>WebServiceSchedulerTypeException</fullName>
+        <categories>Exception</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>WebServiceSchedulerTypeException</shortDescription>
+        <value>The Web Service Scheduler is only designed to schedule retries of Web Service Callout classes that implement IWebService.</value>
+    </labels>
+</CustomLabels>

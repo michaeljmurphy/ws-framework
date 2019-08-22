@@ -17,7 +17,7 @@ public with sharing class WebServiceScheduler
         if(wsImp instanceOf IWebService) {
             System.enqueueJob(wsImp);            
         } else {
-            throw new WebServiceSchedulerException('WebServiceScheduler should not schedule classes which do not implement IWebService');
+            throw new WebServiceSchedulerException(Label.WebServiceSchedulerTypeException);
         }
     }
 
