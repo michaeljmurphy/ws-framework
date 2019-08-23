@@ -26,7 +26,7 @@ public virtual class VirtualWebService {
                 , retry_interval_mins__c
                 , uri__c
                 , verb__c
-                , body__c
+                , request_body__c
                 FROM WebServiceSetting__mdt
                 WHERE developername = :wsName];
     }
